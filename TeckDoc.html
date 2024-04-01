@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JS Classes Overview</title>
+</head>
+<body>
+  <nav id="navbar">
+    <header>Classes Overview</header>
+    <ul>
+      <li><a class="nav-link" href="#Overview">Overview</a></li>
+      <li><a class="nav-link" href="#Defining_classes">Defining classes</a></li>
+      <li><a class="nav-link" href="#Class_body">Class body</a></li>
+      <li><a class="nav-link" href="#Constructor">Constructor</a></li>
+      <li><a class="nav-link" href="#Static_initialization_blocks">Static initialization blocks</a></li>
+      <li><a class="nav-link" href="#Methods">Methods</a></li>
+      <li><a class="nav-link" href="#Static_methods_and_fields">Static methods and fields</a></li>
+      <li><a class="nav-link" href="#Field_declarations">Field declarations</a></li>
+      <li><a class="nav-link" href="#Private_properties">Private properties</a></li>
+      <li><a class="nav-link" href="#Inheritance">Inheritance</a></li>
+      <li><a class="nav-link" href="#Evaluation_order">Evaluation order</a></li>
+      <li><a class="nav-link" href="#Examples">Examples</a></li>
+      <li><a class="nav-link" href="#Reference">Reference</a></li>
+    </ul>
+  </nav>
+  <main id="main-doc">
+    <section class="main-section" id="Overview">
+      <header>Overview</header>
+      <p>Classes are a template for creating objects. They encapsulate data with code to work on that data. Classes in JS are built on prototypes but also have some syntax and semantics that are unique to classes.</p>
+    </section>
+    <section class="main-section" id="Defining_classes">
+      <header>Defining classes</header>
+      <p>Classes are in fact "special functions", and just as you can define function expressions and function declarations, a class can be defined in two ways: a class expression or a class declaration.</p>
+      <pre><code>
+// Declaration
+class Rectangle {
+  constructor(height, width) {
+    this.height = height;
+    this.width = width;
+  }
+}
+
+// Expression; the class is anonymous but assigned to a variable
+const Rectangle = class {
+  constructor(height, width) {
+    this.height = height;
+    this.width = width;
+  }
+};
+
+// Expression; the class has its own name
+const Rectangle = class Rectangle2 {
+  constructor(height, width) {
+    this.height = height;
+    this.width = width;
+  }
+};
+      </code></pre>
+      <p>Like function expressions, class expressions may be anonymous, or have a name that's different from the variable that it's assigned to. However, unlike function declarations, class declarations have the same temporal dead zone restrictions as <code>let</code> or <code>const</code> and behave as if they are not hoisted.</p>
+    </section>
+    <section class="main-section" id="Class_body">
+      <header>Class body</header>
+      <p>The body of a class is the part that is in curly braces <code>{}</code>. This is where you define class members, such as methods or constructor.</p>
+      <p>The body of a class is executed in strict mode even without the <code>"use strict"</code> directive.</p>
+      <p>A class element can be characterized by three aspects:</p>
+      <ul>
+        <li>Kind: Getter, setter, method, or field</li>
+        <li>Location: Static or instance</li>
+        <li>Visibility: Public or private</li>
+      </ul>
+    </section>
+    <section class="main-section" id="Constructor">
+      <header>Constructor</header>
+      <p>The <code>constructor</code> method is a special method for creating and initializing an object created with a class. There can only be one special method with the name "constructor" in a class — a <code>SyntaxError</code> is thrown if the class contains more than one occurrence of a <code>constructor</code> method.</p>
+      <p>A constructor can use the super keyword to call the constructor of the super class.</p>
+      <p>You can create instance properties inside the constructor:</p>
+      <pre><code>
+class Rectangle {
+  constructor(height, width) {
+    this.height = height;
+    this.width = width;
+  }
+}
+      </code></pre>
+      <p>Alternatively, if your instance properties' values do not depend on the constructor's arguments, you can define them as class fields.</p>
+    </section>
+    <section class="main-section" id="Static_initialization_blocks">
+      <header>Static initialization blocks</header>
+      <p>Static initialization blocks allow flexible initialization of static properties, including the evaluation of statements during initialization, while granting access to the private scope.</p>
+      <p>Multiple static blocks can be declared, and these can be interleaved with the declaration of static fields and methods (all static items are evaluated in declaration order).</p>
+    </section>
+    <section class="main-section" id="Methods">
+      <header>Methods</header>
+      <p>Methods are defined on the prototype of each class instance and are shared by all instances. Methods can be plain functions, async functions, generator functions, or async generator functions. For more information, see method definitions.</p>
+      <pre><code>
+class Rectangle {
+  constructor(height, width) {
+    this.height = height;
+    this.width = width;
+  }
+  // Getter
+  get area() {
+    return this.calcArea();
+  }
+  // Method
+  calcArea() {
+    return this.height * this.width;
+  }
+  *getSides() {
+    yield this.height;
+    yield this.width;
+    yield this.height;
+    yield this.width;
+  }
+}
+
+const square = new Rectangle(10, 10);
+
+console.log(square.area); // 100
+console.log([...square.getSides()]); // [10, 10, 10, 10]
+      </code></pre>  
+    </section>
+    <section class="main-section" id="Static_methods_and_fields">
+      <header>Static methods and fields</header>
+      <p>The <code>static</code> keyword defines a static method or field for a class. Static properties (fields and methods) are defined on the class itself instead of each instance. Static methods are often used to create utility functions for an application, whereas static fields are useful for caches, fixed-configuration, or any other data that doesn't need to be replicated across instances.</p>
+      <pre><code>
+class Point {
+  constructor(x, y) {
+    this.x = x;
+    this.y = y;
+  }
+
+  static displayName = "Point";
+  static distance(a, b) {
+    const dx = a.x - b.x;
+    const dy = a.y - b.y;
+
+    return Math.hypot(dx, dy);
+  }
+}
+
+const p1 = new Point(5, 5);
+const p2 = new Point(10, 10);
+p1.displayName; // undefined
+p1.distance; // undefined
+p2.displayName; // undefined
+p2.distance; // undefined
+
+console.log(Point.displayName); // "Point"
+console.log(Point.distance(p1, p2)); // 7.0710678118654755
+      </code></pre>
+    </section>
+    <section class="main-section" id="Field_declarations">
+      <header>Field declarations</header>
+      <p>With the class field declaration syntax, the constructor example can be written as:</p>
+      <pre><code>
+class Rectangle {
+  height = 0;
+  width;
+  constructor(height, width) {
+    this.height = height;
+    this.width = width;
+  }
+}
+      </code></pre>  
+      <p>Class fields are similar to object properties, not variables, so we don't use keywords such as <code>const</code> to declare them. In JavaScript, private properties use a special identifier syntax, so modifier keywords like <code>public</code> and <code>private</code> should not be used either.</p>
+      <p>As seen above, the fields can be declared with or without a default value. Fields without default values default to <code>undefined</code>. By declaring fields up-front, class definitions become more self-documenting, and the fields are always present, which help with optimizations.</p>
+    </section>
+    <section class="main-section" id="Private_properties">
+      <header>Private properties</header>
+      <p>Using private fields, the definition can be refined as below.</p>
+      <pre><code>
+class Rectangle {
+  #height = 0;
+  #width;
+  constructor(height, width) {
+    this.#height = height;
+    this.#width = width;
+  }
+}
+      </code></pre>
+      <p>It's an error to reference private fields from outside of the class; they can only be read or written within the class body. By defining things that are not visible outside of the class, you ensure that your classes' users can't depend on internals, which may change from version to version.</p>
+      <p>Private fields can only be declared up-front in a field declaration. They cannot be created later through assigning to them, the way that normal properties can.</p>
+    </section>
+    <section class="main-section" id="Inheritance">
+      <header>Inheritance</header>
+      <p>The <code>extends</code> keyword is used in class declarations or class expressions to create a class as a child of another constructor (either a class or a function).</p>
+      <pre><code>
+class Animal {
+  constructor(name) {
+    this.name = name;
+  }
+
+  speak() {
+    console.log(`${this.name} makes a noise.`);
+  }
+}
+
+class Dog extends Animal {
+  constructor(name) {
+    super(name); // call the super class constructor and pass in the name parameter
+  }
+
+  speak() {
+    console.log(`${this.name} barks.`);
+  }
+}
+
+const d = new Dog("Mitzie");
+d.speak(); // Mitzie barks.
+      </code></pre>
+      <p>If there is a constructor present in the subclass, it needs to first call <code>super()</code> before using <code>this</code>. The <code>super</code> keyword can also be used to call corresponding methods of super class.</p>
+      <pre><code>
+class Cat {
+  constructor(name) {
+    this.name = name;
+  }
+
+  speak() {
+    console.log(`${this.name} makes a noise.`);
+  }
+}
+
+class Lion extends Cat {
+  speak() {
+    super.speak();
+    console.log(`${this.name} roars.`);
+  }
+}
+
+const l = new Lion("Fuzzy");
+l.speak();
+// Fuzzy makes a noise.
+// Fuzzy roars.
+      </code></pre>
+    </section>
+    <section class="main-section" id="Evaluation_order">
+      <header>Evaluation order</header>
+      <p>When a <code>class</code> declaration or <code>class</code> expression is evaluated, its various components are evaluated in the following order:</p>
+      <ol>
+        <li>The <code>extends</code> clause, if present, is first evaluated. It must evaluate to a valid constructor function or <code>null</code>, or a <code>TypeError</code> is thrown.</li>
+        <li>The <code>constructor</code> method is extracted, substituted with a default implementation if <code>constructor</code> is not present. However, because the <code>constructor</code> definition is only a method definition, this step is not observable.</li>
+        <li>The class elements' property keys are evaluated in the order of declaration. If the property key is computed, the computed expression is evaluated, with the <code>this</code> value set to the <code>this</code> value surrounding the class (not the class itself). None of the property values are evaluated yet.</li>
+        <li>Methods and accessors are installed in the order of declaration. Instance methods and accessors are installed on the <code>prototype</code> property of the current class, and static methods and accessors are installed on the class itself. Private instance methods and accessors are saved to be installed on the instance directly later. This step is not observable.</li>
+        <li>The class is now initialized with the prototype specified by <code>extends</code> and implementation specified by <code>constructor</code>. For all steps above, if an evaluated expression tries to access the name of the class, a <code>ReferenceError</code> is thrown because the class is not initialized yet.</li>
+        <li>The class elements' values are evaluated in the order of declaration:
+          <ul>
+            <li>For each instance field (public or private), its initializer expression is saved. The initializer is evaluated during instance creation, at the start of the constructor (for base classes) or immediately before the <code>super()</code> call returns (for derived classes).</li>
+            <li>For each static field (public or private), its initializer is evaluated with <code>this</code> set to the class itself, and the property is created on the class.</li>
+            <li>Static initialization blocks are evaluated with <code>this</code> set to the class itself.</li>
+          </ul>
+        </li>
+        <li>The class is now fully initialized and can be used as a constructor functioneader</li>
+      </ol>
+    </section>
+    <section class="main-section" id="Examples">
+      <header>Examples</header>
+      <p>When a static or instance method is called without a value for <code>this</code>, such as by assigning the method to a variable and then calling it, the <code>this</code> value will be <code>undefined</code> inside the method. This behavior is the same even if the <code>"use strict"</code> directive isn't present, because code within the <code>class</code> body is always executed in strict mode.</p>
+      <pre><code>
+class Animal {
+  speak() {
+    return this;
+  }
+  static eat() {
+    return this;
+  }
+}
+
+const obj = new Animal();
+obj.speak(); // the Animal object
+const speak = obj.speak;
+speak(); // undefined
+
+Animal.eat(); // class Animal
+const eat = Animal.eat;
+eat(); // undefined
+      </code></pre>
+      <p>If we rewrite the above using traditional function-based syntax in non–strict mode, then <code>this</code> method calls are automatically bound to <code>globalThis</code>. In strict mode, the value of <code>this</code> remains as <code>undefined</code>.</p>
+      <pre><code>
+function Animal() {}
+
+Animal.prototype.speak = function () {
+  return this;
+};
+
+Animal.eat = function () {
+  return this;
+};
+
+const obj = new Animal();
+const speak = obj.speak;
+speak(); // global object (in non–strict mode)
+
+const eat = Animal.eat;
+eat(); // global object (in non-strict mode)
+      </code></pre>
+    </section>
+    <section class="main-section" id="Reference">
+      <header>Reference</header>
+      <ul>
+        <li>All the documentation in this page is taken from <a href="#Reference">MDN</a></li>
+      </ul>
+    </section>
+  </main>
+    
+</body>
+</html>
